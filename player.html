@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Wheels - Ruffle Player</title>
     <style>
+        /* Force the game to fill the entire browser window */
         body, html { 
             margin: 0; 
             padding: 0; 
@@ -11,37 +15,62 @@
             background-color: #000; 
         }
 
-        /* This is the secret: force the player to stay at the top-left but be 100% size */
-        #container, ruffle-player { 
+        #container { 
+            width: 100%; 
+            height: 100%; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        ruffle-player { 
             width: 100% !important; 
             height: 100% !important;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
     </style>
 </head>
 <body>
+
     <div id="container"></div>
+
+    <!-- Load the latest version of Ruffle -->
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+
     <script>
+        // 1. Configure Ruffle settings before loading
         window.RufflePlayer = window.RufflePlayer || {};
-        window.addEventListener("load", (event) => {
+        window.RufflePlayer.config = {
+            "letterbox": "fullscreen",
+            "scale": "exactFit",
+            "forceScale": true,
+            "quality": "high",
+            "autoplay": "on",
+            "unmuteOverlay": "hidden",
+            "warnOnUnsupportedContent": false // Happy Wheels has some AS3 features Ruffle is still perfecting
+        };
+
+        window.addEventListener("DOMContentLoaded", () => {
             const ruffle = window.RufflePlayer.newest();
             const player = ruffle.createPlayer();
-            document.getElementById("container").appendChild(player);
+            const container = document.getElementById("container");
             
-            // We are adding "exactFit" here to force the pixels to stretch
-            player.config = {
-                "letterbox": "fullscreen",
-                "scale": "exactFit",
-                "forceScale": true,
-                "quality": "high"
-            };
+            container.appendChild(player);
 
-            player.load("HappyWheels.swf"); 
+            // 2. Load the SWF file
+            player.load({
+                url: "HappyWheels.swf",
+                backgroundColor: "#000000"
+            }).then(() => {
+                console.log("SWF loaded successfully!");
+            }).catch((error) => {
+                console.error("Ruffle could not load the SWF file:", error);
+                
+                // Show a helpful message on screen if it fails
+                if (window.location.protocol === 'file:') {
+                    container.innerHTML = "<h2 style='color:white; text-align:center; padding-top:50px;'>Error: CORS Blocked.<br>You cannot open this file by double-clicking it.<br>Please use a local server (VS Code Live Server).</h2>";
+                }
+            });
         });
     </script>
 </body>
-
 </html>
